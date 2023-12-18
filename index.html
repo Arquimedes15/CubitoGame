@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cubito</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+
+            & img {
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+
+        canvas {
+            background-color: skyblue;
+        }
+
+        #cubi-chat {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background-color: rgb(255, 255, 255);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="3000"></canvas>
+</body>
+<script src="data/colision.js"></script>
+<script src="data/jugador.js"></script>
+<script src="data/gravedad.js"></script>
+<script src="data/generalMundo.js"></script>
+<script src="data/camara.js"></script>
+<script src="data/mode_dev.js"></script>
+<script src="data/object_temp.js"></script>
+<script src="data/fx.js"></script>
+<script>
+    let jugador1 = new Jugador(1450, 1950);
+    let canvas = document.querySelector("#canvas")
+    //resize canvas
+    canvas.width = 3000;
+    canvas.height = 2500;
+    let c = canvas.getContext("2d");
+
+    //controles
+    document.addEventListener("keydown", (e) => {
+        switch (e.key) {
+            case "a": {
+                jugador1.key[0] = true;
+            } break;
+            case "d": {
+                jugador1.key[1] = true;
+            } break;
+        }
+    })
+
+    //Movimineto
+    function mover() {
+        let xprevius = jugador1.x;
+        if (jugador1.key[1]) {
+            if (!checkColisionesAll("plataformasDe", jugador1, objectos)) {
+                jugador1.x += 4;
+            }
+        }
+        if (jugador1.key[0]) {
+            if (!checkColisionesAll("plataformasIz", jugador1, objectos)) {
+                jugador1.x -= 4;
+            }
+        }
+    }
+    let saltar = false;
+    function salto() {
+        if (saltar) {
+            jugador1.y -= gravedad * 2;
+        }
+    }
+
+    document.addEventListener("keyup", (e) => {
+        switch (e.key) {
+            case "a": {
+                jugador1.key[0] = false;
+            } break;
+            case "d": {
+                jugador1.key[1] = false;
+            } break;
+            case "w": {
+                if (checkColisionesAll("piso", jugador1, objectos)) {
+                    if (!saltar) {
+                    var noSaltar = setTimeout(()=>{
+                        saltar = false;
+                    }, 500)
+                    saltar = true;
+                }
+                }
+            }
+        }
+    })
+
+
+    //play
+    function play() {
+        if (game_over) {
+            let body = document.querySelector("body");
+            body.innerHTML = `<img src="https://i.ytimg.com/vi/U2MtC6EmCRw/maxresdefault.jpg">`
+            return;
+        }
+        //limpiar
+        c.clearRect(0, 0, canvas.width, canvas.height);
+
+        //logica
+        gravedadJugador();
+        funcionObjects();
+        salto();
+        destroyObject();
+        mover();
+
+        //dibujar
+        dibujarAllObjects();
+        jugador1.dibujar();
+        controlCamp();
+
+        //FX
+        drawFX();
+
+        requestAnimationFrame(play);
+    }
+    play();
+</script>
+
+</html>
